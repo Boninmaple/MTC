@@ -3,98 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MTC 二维码生成工具</title>
-    <!-- 引入二维码生成库 -->
+    <title>MTC 批量二维码生成器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #fff; }
-        h2 { color: #004080; text-align: center; }
-        .form-group { margin-bottom: 10px; }
-        label { display: inline-block; width: 80px; font-weight: bold; font-size: 14px;}
-        input { padding: 8px; width: calc(100% - 95px); border: 1px solid #ccc; border-radius: 4px; }
-        .chem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .chem-grid label { width: 30px; }
-        .chem-grid input { width: calc(100% - 40px); }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
+        .page-title { text-align: center; color: #003366; margin-bottom: 20px; }
         
-        button { 
-            width: 100%; padding: 12px; background: #07c160; color: white; 
-            border: none; border-radius: 5px; font-size: 16px; font-weight: bold; 
-            margin-top: 20px; cursor: pointer;
+        /* 每一项的卡片样式 */
+        .item-card { 
+            background: white; padding: 15px; border-radius: 8px; 
+            margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-top: 4px solid #003366; position: relative;
         }
-        #qr-container { text-align: center; margin-top: 30px; }
-        #qrcode { display: inline-block; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-        .tip { font-size: 12px; color: #888; text-align: center; margin-top: 10px; }
+        .item-header { font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+        .delete-btn { position: absolute; right: 15px; top: 12px; color: red; cursor: pointer; font-size: 14px; background: none; border: none; }
+        
+        /* 表单网格 */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } } /* 手机端单列 */
+        
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 13px; font-weight: bold; color: #555; }
+        .input-group .en-label { font-size: 10px; color: #999; margin-bottom: 4px; }
+        .input-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        /* 二维码显示区 */
+        .qr-output-box { 
+            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; 
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .qr-placeholder { min-height: 120px; display: flex; align-items: center; color: #aaa; font-size: 12px; }
+        
+        /* 底部操作按钮 */
+        .action-bar { position: sticky; bottom: 0; background: #fff; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; margin: 0 -15px -15px -15px;}
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #f0f0f0; color: #333; border: 1px solid #ddd; }
+        .btn-generate { background: #07c160; color: white; }
     </style>
 </head>
 <body>
 
-    <h2>📝 录入数据生成二维码</h2>
+    <h2 class="page-title">📝 MTC 批量二维码生成器</h2>
 
-    <div class="form-group">
-        <label>炉批号</label><input type="text" id="heat" placeholder="例: H230410">
-    </div>
-    <div class="form-group">
-        <label>材质</label><input type="text" id="mat" placeholder="例: 304L / 1.4306">
-    </div>
-    <div class="form-group">
-        <label>规格</label><input type="text" id="spec" placeholder="例: DN50">
+    <!-- 所有的产品项都会放在这个容器里 -->
+    <div id="items-container"></div>
+
+    <div class="action-bar">
+        <button class="btn btn-add" onclick="addNewItem()">➕ 添加一项</button>
+        <button class="btn btn-generate" onclick="generateAll()">🚀 全部生成二维码</button>
     </div>
 
-    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-    <div style="font-weight:bold; margin-bottom:10px; color:#666;">化学成分录入：</div>
+    <!-- 隐藏的模板，用于克隆 -->
+    <template id="item-template">
+        <div class="item-card" data-id="{ID}">
+            <div class="item-header">产品项 #{ID}</div>
+            <button class="delete-btn" onclick="removeItem(this)">删除</button>
+            
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>产品名称 <span class="en-label">(Product Name)</span></label>
+                    <input type="text" class="in-prod" placeholder="例: 不锈钢法兰">
+                </div>
+                <div class="input-group">
+                    <label>规 格 <span class="en-label">(Size/Spec)</span></label>
+                    <input type="text" class="in-spec" placeholder="例: DN50 PN16">
+                </div>
+                <div class="input-group">
+                    <label>材 质 <span class="en-label">(Material Grade)</span></label>
+                    <input type="text" class="in-mat" placeholder="例: 304L / 1.4306">
+                </div>
+                <div class="input-group">
+                    <label>执行标准 <span class="en-label">(Standard)</span></label>
+                    <input type="text" class="in-std" placeholder="例: DIN 2576">
+                </div>
+                <div class="input-group">
+                    <label>材料炉号 <span class="en-label">(Material Heat No.)</span></label>
+                    <input type="text" class="in-heat" placeholder="例: H230911">
+                </div>
+                <div class="input-group">
+                    <label>热处理批号 <span class="en-label">(Heat Treatment Lot)</span></label>
+                    <input type="text" class="in-ht" placeholder="例: HT-2023-01">
+                </div>
+                <div class="input-group">
+                    <label>冶炼方式 <span class="en-label">(Melting Process)</span></label>
+                    <input type="text" class="in-melt" placeholder="例: EAF+AOD">
+                </div>
+                <div class="input-group">
+                    <label>交货状态 <span class="en-label">(Delivery Condition)</span></label>
+                    <input type="text" class="in-cond" placeholder="例: 固溶 (Solution Annealed)">
+                </div>
+                <div class="input-group">
+                    <label>数 量 <span class="en-label">(Quantity)</span></label>
+                    <input type="text" class="in-qty" placeholder="例: 100 pcs">
+                </div>
+            </div>
 
-    <div class="chem-grid">
-        <div><label>C</label><input type="text" id="c" placeholder="0.025"></div>
-        <div><label>Si</label><input type="text" id="si" placeholder="0.45"></div>
-        <div><label>Mn</label><input type="text" id="mn" placeholder="1.20"></div>
-        <div><label>P</label><input type="text" id="p" placeholder="0.030"></div>
-        <div><label>S</label><input type="text" id="s" placeholder="0.005"></div>
-        <div><label>Ni</label><input type="text" id="ni" placeholder="8.05"></div>
-        <div><label>Cr</label><input type="text" id="cr" placeholder="18.2"></div>
-    </div>
-
-    <button onclick="generateQR()">🎯 一键生成质保二维码</button>
-
-    <div id="qr-container">
-        <div id="qrcode"></div>
-        <div class="tip" id="tip-text" style="display:none;">长按上方二维码保存，或直接截图放入 Excel</div>
-    </div>
+            <!-- 生成的二维码会显示在这里 -->
+            <div class="qr-output-box">
+                <div class="qr-placeholder">点击下方生成按钮后显示二维码</div>
+                <div class="qr-canvas"></div>
+            </div>
+        </div>
+    </template>
 
     <script>
-        // ⚠️【极度重要】：把下面这个网址换成你上传 mtc.html 的真实 GitHub 地址！
-        const YOUR_GITHUB_URL = "https://boninmaple.github.io/MTC/mtc.html";
+        // ⚠️【极度重要】：把下面这个网址换成你真实的 GitHub 展示页地址！
+        const YOUR_GITHUB_URL = "https://boninmaple.github.io/MTC/maker.html";
+        
+        let itemCount = 0;
 
-        var qrcodeObj = null;
+        // 页面加载时自动添加第一项
+        window.onload = function() {
+            addNewItem();
+        };
 
-        function generateQR() {
-            // 1. 获取输入框里的值
-            let heat = document.getElementById('heat').value;
-            let mat = document.getElementById('mat').value;
-            let spec = document.getElementById('spec').value;
+        // 添加一个新表单块
+        function addNewItem() {
+            itemCount++;
+            const template = document.getElementById('item-template').innerHTML;
+            const html = template.replace(/\{ID\}/g, itemCount);
             
-            let c = document.getElementById('c').value;
-            let si = document.getElementById('si').value;
-            let mn = document.getElementById('mn').value;
-            let p = document.getElementById('p').value;
-            let s = document.getElementById('s').value;
-            let ni = document.getElementById('ni').value;
-            let cr = document.getElementById('cr').value;
+            const container = document.getElementById('items-container');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            container.appendChild(tempDiv.firstElementChild);
+            
+            // 滚动到最底部
+            window.scrollTo(0, document.body.scrollHeight);
+        }
 
-            // 2. 把数值拼接到展示页面的网址后面
-            let finalUrl = `${YOUR_GITHUB_URL}?heat=${encodeURIComponent(heat)}&mat=${encodeURIComponent(mat)}&spec=${encodeURIComponent(spec)}&c=${c}&si=${si}&mn=${mn}&p=${p}&s=${s}&ni=${ni}&cr=${cr}`;
+        // 删除当前表单块
+        function removeItem(btn) {
+            const card = btn.closest('.item-card');
+            card.remove();
+        }
 
-            // 3. 生成二维码
-            document.getElementById('qrcode').innerHTML = ""; // 清空旧的
-            qrcodeObj = new QRCode(document.getElementById("qrcode"), {
-                text: finalUrl,
-                width: 150,   // 生成的二维码图片大小
-                height: 150,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.L // 使用低容错率，让二维码更干净易扫
+        // 核心：读取所有卡片，批量生成二维码
+        function generateAll() {
+            const cards = document.querySelectorAll('.item-card');
+            
+            if(cards.length === 0) {
+                alert("请至少添加一项！"); return;
+            }
+
+            cards.forEach(card => {
+                // 1. 获取当前卡片内各个输入框的值
+                const prod = card.querySelector('.in-prod').value;
+                const spec = card.querySelector('.in-spec').value;
+                const mat = card.querySelector('.in-mat').value;
+                const std = card.querySelector('.in-std').value;
+                const heat = card.querySelector('.in-heat').value;
+                const ht = card.querySelector('.in-ht').value;
+                const melt = card.querySelector('.in-melt').value;
+                const cond = card.querySelector('.in-cond').value;
+                const qty = card.querySelector('.in-qty').value;
+
+                // 2. 拼接网址
+                const finalUrl = `${YOUR_GITHUB_URL}?prod=${encodeURIComponent(prod)}&spec=${encodeURIComponent(spec)}&mat=${encodeURIComponent(mat)}&std=${encodeURIComponent(std)}&heat=${encodeURIComponent(heat)}&ht=${encodeURIComponent(ht)}&melt=${encodeURIComponent(melt)}&cond=${encodeURIComponent(cond)}&qty=${encodeURIComponent(qty)}`;
+
+                // 3. 找到该卡片专属的二维码容器
+                const qrCanvas = card.querySelector('.qr-canvas');
+                const placeholder = card.querySelector('.qr-placeholder');
+                
+                // 清空旧二维码，隐藏提示字
+                qrCanvas.innerHTML = ""; 
+                placeholder.style.display = "none";
+
+                // 4. 生成二维码在卡片内部
+                new QRCode(qrCanvas, {
+                    text: finalUrl,
+                    width: 120,   // 二维码大小
+                    height: 120,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.L
+                });
             });
-
-            document.getElementById('tip-text').style.display = "block";
+            
+            alert("✅ 所有二维码已生成完毕！您可以开始截图或右键保存了。");
         }
     </script>
 </body>
