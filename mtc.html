@@ -6,62 +6,69 @@
     <title>电子质保书 (e-MTC) - 温州博江管件</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #fff; margin: 0; padding: 10px; color: #333; }
-        .header { text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h1 { margin: 0; font-size: 20px; color: #003366; }
-        .header p { margin: 5px 0; font-size: 11px; color: #666; }
+        .header { text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { margin: 0; font-size: 18px; color: #003366; }
+        .header p { margin: 3px 0; font-size: 10px; color: #666; }
         
-        /* 表格样式 */
-        .mtc-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        .mtc-table th, .mtc-table td { border: 1px solid #000; padding: 6px 2px; text-align: center; word-break: break-all; }
+        /* 增加横向滚动容器，防止手机端挤压 */
+        .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        
+        .mtc-table { width: 100%; min-width: 800px; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+        .mtc-table th, .mtc-table td { border: 1px solid #000; padding: 8px 4px; text-align: center; word-break: break-all; }
         .bg-gray { background: #f2f2f2; font-weight: bold; }
         
-        .label-cn { display: block; font-size: 11px; }
-        .label-en { display: block; font-size: 9px; font-weight: normal; color: #666; transform: scale(0.9); }
+        .label-cn { display: block; font-size: 12px; margin-bottom: 2px;}
+        .label-en { display: block; font-size: 9px; font-weight: normal; color: #666; text-transform: uppercase; }
         
         .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #888; border-top: 1px dashed #ccc; padding-top: 10px; }
-        .verify-tag { display: inline-block; border: 1px solid #2e7d32; color: #2e7d32; padding: 2px 8px; border-radius: 3px; margin-bottom: 10px; font-weight: bold; }
+        .verify-tag { display: inline-block; border: 1px solid #2e7d32; color: #2e7d32; padding: 2px 8px; border-radius: 3px; margin-bottom: 10px; font-weight: bold; font-size: 12px;}
     </style>
 </head>
 <body>
     <div class="header">
         <h1>温州博江管件有限公司</h1>
         <p>Wenzhou Bojiang Pipe Fittings Co., Ltd.</p>
-        <p>检测报告/材质证明书 (Material Test Certificate)</p>
+        <p>材质证明书 (Material Test Certificate)</p>
     </div>
 
     <div style="text-align: center;">
-        <span class="verify-tag">✅ 官方数字化正品核验</span>
+        <span class="verify-tag">✅ 官方数字化正品核验 (Verified Data)</span>
     </div>
 
-    <table class="mtc-table">
-        <thead>
-            <tr class="bg-gray">
-                <th style="width: 40px;">No.</th>
-                <th><span class="label-cn">产品名称</span><span class="label-en">Product</span></th>
-                <th><span class="label-cn">规格</span><span class="label-en">Specification</span></th>
-                <th><span class="label-cn">材质</span><span class="label-en">Material</span></th>
-                <th><span class="label-cn">炉号/批号</span><span class="label-en">Heat/Lot No.</span></th>
-                <th><span class="label-cn">标准/状态</span><span class="label-en">Std/Cond</span></th>
-                <th style="width: 50px;"><span class="label-cn">数量</span><span class="label-en">Qty</span></th>
-            </tr>
-        </thead>
-        <tbody id="table-body">
-            <!-- 数据将通过 JS 动态插入 -->
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="mtc-table">
+            <thead>
+                <tr class="bg-gray">
+                    <th style="width: 35px;">No.</th>
+                    <th><span class="label-cn">产品名称</span><span class="label-en">Product</span></th>
+                    <th><span class="label-cn">规格</span><span class="label-en">Specification</span></th>
+                    <th><span class="label-cn">材质</span><span class="label-en">Material</span></th>
+                    <th><span class="label-cn">执行标准</span><span class="label-en">Standard</span></th>
+                    <th><span class="label-cn">材料炉号</span><span class="label-en">Heat No.</span></th>
+                    <th><span class="label-cn">热处理批号</span><span class="label-en">Lot No.</span></th>
+                    <th><span class="label-cn">冶炼方式</span><span class="label-en">Melting</span></th>
+                    <th><span class="label-cn">交货状态</span><span class="label-en">Condition</span></th>
+                    <th style="width: 50px;"><span class="label-cn">数量</span><span class="label-en">Qty</span></th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- 数据由 JS 渲染 -->
+            </tbody>
+        </table>
+    </div>
 
     <div class="footer">
-        * 本页面数据由温州博江管件官方系统生成，具有同等材质证明效力 *
+        * 本页面数据由温州博江管件官方系统生成，具有同等材质证明效力 *<br>
+        Generated by Bojiang Official System. Equal effect to paper MTC.
     </div>
 
     <script>
-        // 解析 URL 参数
         const urlParams = new URLSearchParams(window.location.search);
         const dataStr = urlParams.get('d');
         
         if (dataStr) {
             try {
-                // 解码 Base64 数据并转为 JSON
+                // 解码数据
                 const jsonData = JSON.parse(decodeURIComponent(escape(atob(dataStr))));
                 const tbody = document.getElementById('table-body');
                 
@@ -69,18 +76,21 @@
                     const row = `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${item.p}</td>
+                            <td><b>${item.p}</b></td>
                             <td>${item.s}</td>
                             <td>${item.m}</td>
-                            <td>炉:${item.h}<br>热:${item.ht}</td>
-                            <td>标:${item.st}<br>冶:${item.ml}<br>态:${item.c}</td>
+                            <td>${item.st}</td>
+                            <td>${item.h}</td>
+                            <td>${item.l}</td>
+                            <td>${item.ml}</td>
+                            <td>${item.c}</td>
                             <td>${item.q}</td>
                         </tr>
                     `;
                     tbody.innerHTML += row;
                 });
             } catch (e) {
-                document.body.innerHTML = "<h3 style='text-align:center;margin-top:50px;'>⚠️ 数据解析错误，请确认二维码是否完整</h3>";
+                document.body.innerHTML = "<h3 style='text-align:center;margin-top:50px;'>⚠️ 数据加载失败，请检查二维码是否完整</h3>";
             }
         }
     </script>
