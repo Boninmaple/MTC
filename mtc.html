@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子质保书 (e-MTC) - 温州博江管件</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f9; margin: 0; color: #333; }
+        .header { background: #004080; color: white; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 20px; }
+        .verify-tag { background: #e8f5e9; color: #2e7d32; text-align: center; padding: 10px; font-weight: bold; font-size: 14px; }
+        .card { background: white; margin: 15px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card-title { color: #004080; border-bottom: 2px solid #004080; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; }
+        .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .row:last-child { border-bottom: none; }
+        .label { color: #666; }
+        .val { font-weight: bold; color: #000; }
+        .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>温州博江管件 - 材质证明</h1>
+    </div>
+    <div class="verify-tag">✅ 官方扫码溯源，数据已核验</div>
+
+    <div class="card">
+        <div class="card-title">产品基础信息</div>
+        <div class="row"><span class="label">炉批号 (Heat No.)</span><span class="val" id="heat_no"></span></div>
+        <div class="row"><span class="label">材质 (Material)</span><span class="val" id="material"></span></div>
+        <div class="row"><span class="label">规格 (Size)</span><span class="val" id="spec"></span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">化学成分 (Chemical Composition %)</div>
+        <div class="grid-box">
+            <div class="row"><span class="label">C: </span><span class="val" id="c_val"></span></div>
+            <div class="row"><span class="label">Si: </span><span class="val" id="si_val"></span></div>
+            <div class="row"><span class="label">Mn: </span><span class="val" id="mn_val"></span></div>
+            <div class="row"><span class="label">P: </span><span class="val" id="p_val"></span></div>
+            <div class="row"><span class="label">S: </span><span class="val" id="s_val"></span></div>
+            <div class="row"><span class="label">Ni: </span><span class="val" id="ni_val"></span></div>
+            <div class="row"><span class="label">Cr: </span><span class="val" id="cr_val"></span></div>
+        </div>
+    </div>
+
+    <script>
+        function getP(name) { return new URLSearchParams(window.location.search).get(name) || "-"; }
+        // 自动读取网址里的参数并显示
+        document.getElementById('heat_no').innerText = getP('heat');
+        document.getElementById('material').innerText = getP('mat');
+        document.getElementById('spec').innerText = getP('spec');
+        
+        document.getElementById('c_val').innerText = getP('c');
+        document.getElementById('si_val').innerText = getP('si');
+        document.getElementById('mn_val').innerText = getP('mn');
+        document.getElementById('p_val').innerText = getP('p');
+        document.getElementById('s_val').innerText = getP('s');
+        document.getElementById('ni_val').innerText = getP('ni');
+        document.getElementById('cr_val').innerText = getP('cr');
+    </script>
+</body>
+</html>
