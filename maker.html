@@ -60,8 +60,8 @@
 </div>
 
 <script>
-    // ⚠️ 修改为你自己的 GitHub 地址
-    const TARGET_PAGE = "https://boninmaple.github.io/MTC/maker.html";
+    // 自动获取当前目录下的 mtc.html 地址，防止手动输入错误
+    const TARGET_PAGE = window.location.href.split('?')[0].replace("maker.html", "mtc.html");
 
     function addRow() {
         const tbody = document.getElementById('row-container');
@@ -97,17 +97,16 @@
 
         rows.forEach(row => {
             const item = {
-                p: row.querySelector('.p').value,   // Product
-                s: row.querySelector('.s').value,   // Spec
-                m: row.querySelector('.m').value,   // Mat
-                h: row.querySelector('.h').value,   // Heat
-                ht: row.querySelector('.ht').value, // HT Lot
-                st: row.querySelector('.st').value, // Standard
-                c: row.querySelector('.c').value,   // Condition
-                ml: row.querySelector('.ml').value, // Melting
-                q: row.querySelector('.q').value    // Qty
+                p: row.querySelector('.p').value,   
+                s: row.querySelector('.s').value,   
+                m: row.querySelector('.m').value,   
+                h: row.querySelector('.h').value,   
+                ht: row.querySelector('.ht').value, 
+                st: row.querySelector('.st').value, 
+                c: row.querySelector('.c').value,   
+                ml: row.querySelector('.ml').value, 
+                q: row.querySelector('.q').value    
             };
-            // 只要产品名不为空就加入
             if(item.p) allData.push(item);
         });
 
@@ -116,24 +115,25 @@
             return;
         }
 
-        // 数据压缩处理
-        // 使用短 key 减小体积，使用 Base64 编码 URL
+        // 数据处理
         const jsonStr = JSON.stringify(allData);
+        // 使用更兼容的 Base64 编码方式
         const base64Data = btoa(unescape(encodeURIComponent(jsonStr)));
+        
+        // 最终生成的网址
         const finalUrl = `${TARGET_PAGE}?d=${base64Data}`;
+
+        console.log("生成的跳转目标是:", finalUrl); // 你可以在电脑 F12 控制台看到这个地址
 
         // 生成二维码
         document.getElementById("qrcode").innerHTML = "";
         new QRCode(document.getElementById("qrcode"), {
             text: finalUrl,
-            width: 200,
-            height: 200,
+            width: 220,
+            height: 220,
             correctLevel : QRCode.CorrectLevel.L
         });
         
         document.getElementById("qr-status").style.display = "block";
     }
 </script>
-
-</body>
-</html>
