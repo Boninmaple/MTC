@@ -5,59 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电子质保书 (e-MTC) - 温州博江管件</title>
     <style>
-        body { font-family: sans-serif; background: #f4f6f9; margin: 0; color: #333; }
-        .header { background: #004080; color: white; padding: 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 20px; }
-        .verify-tag { background: #e8f5e9; color: #2e7d32; text-align: center; padding: 10px; font-weight: bold; font-size: 14px; }
-        .card { background: white; margin: 15px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card-title { color: #004080; border-bottom: 2px solid #004080; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; }
-        .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; color: #333; }
+        .header { background: #003366; color: white; padding: 20px 15px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; font-size: 12px; color: #a9cce3; }
+        .verify-tag { background: #e8f5e9; color: #2e7d32; text-align: center; padding: 12px; font-weight: bold; font-size: 15px; border-bottom: 1px solid #c8e6c9;}
+        
+        .container { padding: 15px; }
+        .card { background: white; padding: 0 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
         .row:last-child { border-bottom: none; }
-        .label { color: #666; }
-        .val { font-weight: bold; color: #000; }
-        .grid-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .label-box { display: flex; flex-direction: column; width: 45%; }
+        .label-cn { font-size: 15px; color: #333; font-weight: bold; }
+        .label-en { font-size: 11px; color: #888; margin-top: 2px; }
+        
+        .val-box { width: 55%; text-align: right; font-size: 16px; font-weight: bold; color: #003366; word-break: break-all; }
+        
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>温州博江管件 - 材质证明</h1>
+        <h1>温州博江管件有限公司</h1>
+        <p>Wenzhou Bojiang Pipe Fittings Co., Ltd.</p>
     </div>
     <div class="verify-tag">✅ 官方扫码溯源，数据已核验</div>
 
-    <div class="card">
-        <div class="card-title">产品基础信息</div>
-        <div class="row"><span class="label">炉批号 (Heat No.)</span><span class="val" id="heat_no"></span></div>
-        <div class="row"><span class="label">材质 (Material)</span><span class="val" id="material"></span></div>
-        <div class="row"><span class="label">规格 (Size)</span><span class="val" id="spec"></span></div>
+    <div class="container">
+        <div class="card">
+            <div class="row">
+                <div class="label-box"><span class="label-cn">产品名称</span><span class="label-en">Product Name</span></div>
+                <div class="val-box" id="v_prod"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">规 格</span><span class="label-en">Size/Specification</span></div>
+                <div class="val-box" id="v_spec"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">材 质</span><span class="label-en">Material Grade</span></div>
+                <div class="val-box" id="v_mat"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">执行标准</span><span class="label-en">Standard</span></div>
+                <div class="val-box" id="v_std"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">材料炉号</span><span class="label-en">Material Heat No.</span></div>
+                <div class="val-box" id="v_heat"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">热处理批号</span><span class="label-en">Heat Treatment Lot</span></div>
+                <div class="val-box" id="v_ht"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">原材料冶炼方式</span><span class="label-en">Melting Process</span></div>
+                <div class="val-box" id="v_melt"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">交货状态</span><span class="label-en">Delivery Condition</span></div>
+                <div class="val-box" id="v_cond"></div>
+            </div>
+            <div class="row">
+                <div class="label-box"><span class="label-cn">数 量</span><span class="label-en">Quantity</span></div>
+                <div class="val-box" id="v_qty"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="card-title">化学成分 (Chemical Composition %)</div>
-        <div class="grid-box">
-            <div class="row"><span class="label">C: </span><span class="val" id="c_val"></span></div>
-            <div class="row"><span class="label">Si: </span><span class="val" id="si_val"></span></div>
-            <div class="row"><span class="label">Mn: </span><span class="val" id="mn_val"></span></div>
-            <div class="row"><span class="label">P: </span><span class="val" id="p_val"></span></div>
-            <div class="row"><span class="label">S: </span><span class="val" id="s_val"></span></div>
-            <div class="row"><span class="label">Ni: </span><span class="val" id="ni_val"></span></div>
-            <div class="row"><span class="label">Cr: </span><span class="val" id="cr_val"></span></div>
-        </div>
+    <div class="footer">
+        本电子数据等同于纸质材质单效力<br>This e-data has the same effect as paper MTC
     </div>
 
     <script>
         function getP(name) { return new URLSearchParams(window.location.search).get(name) || "-"; }
-        // 自动读取网址里的参数并显示
-        document.getElementById('heat_no').innerText = getP('heat');
-        document.getElementById('material').innerText = getP('mat');
-        document.getElementById('spec').innerText = getP('spec');
-        
-        document.getElementById('c_val').innerText = getP('c');
-        document.getElementById('si_val').innerText = getP('si');
-        document.getElementById('mn_val').innerText = getP('mn');
-        document.getElementById('p_val').innerText = getP('p');
-        document.getElementById('s_val').innerText = getP('s');
-        document.getElementById('ni_val').innerText = getP('ni');
-        document.getElementById('cr_val').innerText = getP('cr');
+        // 自动读取网址参数
+        document.getElementById('v_prod').innerText = getP('prod');
+        document.getElementById('v_spec').innerText = getP('spec');
+        document.getElementById('v_mat').innerText = getP('mat');
+        document.getElementById('v_std').innerText = getP('std');
+        document.getElementById('v_heat').innerText = getP('heat');
+        document.getElementById('v_ht').innerText = getP('ht');
+        document.getElementById('v_melt').innerText = getP('melt');
+        document.getElementById('v_cond').innerText = getP('cond');
+        document.getElementById('v_qty').innerText = getP('qty');
     </script>
 </body>
 </html>
