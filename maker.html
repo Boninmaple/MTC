@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTC 二维码生成工具</title>
+    <!-- 引入二维码生成库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 15px; background: #fff; }
+        h2 { color: #004080; text-align: center; }
+        .form-group { margin-bottom: 10px; }
+        label { display: inline-block; width: 80px; font-weight: bold; font-size: 14px;}
+        input { padding: 8px; width: calc(100% - 95px); border: 1px solid #ccc; border-radius: 4px; }
+        .chem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .chem-grid label { width: 30px; }
+        .chem-grid input { width: calc(100% - 40px); }
+        
+        button { 
+            width: 100%; padding: 12px; background: #07c160; color: white; 
+            border: none; border-radius: 5px; font-size: 16px; font-weight: bold; 
+            margin-top: 20px; cursor: pointer;
+        }
+        #qr-container { text-align: center; margin-top: 30px; }
+        #qrcode { display: inline-block; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .tip { font-size: 12px; color: #888; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>📝 录入数据生成二维码</h2>
+
+    <div class="form-group">
+        <label>炉批号</label><input type="text" id="heat" placeholder="例: H230410">
+    </div>
+    <div class="form-group">
+        <label>材质</label><input type="text" id="mat" placeholder="例: 304L / 1.4306">
+    </div>
+    <div class="form-group">
+        <label>规格</label><input type="text" id="spec" placeholder="例: DN50">
+    </div>
+
+    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+    <div style="font-weight:bold; margin-bottom:10px; color:#666;">化学成分录入：</div>
+
+    <div class="chem-grid">
+        <div><label>C</label><input type="text" id="c" placeholder="0.025"></div>
+        <div><label>Si</label><input type="text" id="si" placeholder="0.45"></div>
+        <div><label>Mn</label><input type="text" id="mn" placeholder="1.20"></div>
+        <div><label>P</label><input type="text" id="p" placeholder="0.030"></div>
+        <div><label>S</label><input type="text" id="s" placeholder="0.005"></div>
+        <div><label>Ni</label><input type="text" id="ni" placeholder="8.05"></div>
+        <div><label>Cr</label><input type="text" id="cr" placeholder="18.2"></div>
+    </div>
+
+    <button onclick="generateQR()">🎯 一键生成质保二维码</button>
+
+    <div id="qr-container">
+        <div id="qrcode"></div>
+        <div class="tip" id="tip-text" style="display:none;">长按上方二维码保存，或直接截图放入 Excel</div>
+    </div>
+
+    <script>
+        // ⚠️【极度重要】：把下面这个网址换成你上传 mtc.html 的真实 GitHub 地址！
+        const YOUR_GITHUB_URL = "https://boninmaple.github.io/MTC/mtc.html";
+
+        var qrcodeObj = null;
+
+        function generateQR() {
+            // 1. 获取输入框里的值
+            let heat = document.getElementById('heat').value;
+            let mat = document.getElementById('mat').value;
+            let spec = document.getElementById('spec').value;
+            
+            let c = document.getElementById('c').value;
+            let si = document.getElementById('si').value;
+            let mn = document.getElementById('mn').value;
+            let p = document.getElementById('p').value;
+            let s = document.getElementById('s').value;
+            let ni = document.getElementById('ni').value;
+            let cr = document.getElementById('cr').value;
+
+            // 2. 把数值拼接到展示页面的网址后面
+            let finalUrl = `${YOUR_GITHUB_URL}?heat=${encodeURIComponent(heat)}&mat=${encodeURIComponent(mat)}&spec=${encodeURIComponent(spec)}&c=${c}&si=${si}&mn=${mn}&p=${p}&s=${s}&ni=${ni}&cr=${cr}`;
+
+            // 3. 生成二维码
+            document.getElementById('qrcode').innerHTML = ""; // 清空旧的
+            qrcodeObj = new QRCode(document.getElementById("qrcode"), {
+                text: finalUrl,
+                width: 150,   // 生成的二维码图片大小
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L // 使用低容错率，让二维码更干净易扫
+            });
+
+            document.getElementById('tip-text').style.display = "block";
+        }
+    </script>
+</body>
+</html>
