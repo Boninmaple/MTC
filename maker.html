@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTC 批量数据录入工具</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         body { font-family: sans-serif; background: #f4f7f9; padding: 10px; margin: 0; }
         .container { width: 98%; max-width: 1400px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -19,7 +20,8 @@
         .btn-add { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; }
         .btn-del { color: #d9534f; cursor: pointer; border: none; background: none; font-size: 16px; }
         .qr-section { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; }
-        #qrcode { display: inline-block; padding: 10px; background: #fff; border: 1px solid #ddd; margin-top: 15px;}
+        /* 【优化】稍微调整了二维码容器的样式以适应更大的尺寸 */
+        #qrcode { display: inline-block; padding: 15px; background: #fff; border: 1px solid #ddd; margin-top: 15px; border-radius: 8px;}
         .btn-main { background: #28a745; color: white; padding: 15px 40px; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold; }
         .tip { font-size: 12px; color: #666; margin-top: 10px; }
     </style>
@@ -28,7 +30,6 @@
 <div class="container">
     <h2>MTC 数字化批量录入</h2>
     
-    <!-- 新增：公司名称自定义输入区 -->
     <div class="company-inputs">
         <input type="text" id="comp-cn" value="温州博江管件有限公司" placeholder="请输入中文公司名称">
         <input type="text" id="comp-en" value="Wenzhou Bojiang Pipe Fittings Co., Ltd." placeholder="请输入英文公司名称">
@@ -88,7 +89,6 @@
     addRow(); addRow();
 
     function generateCombinedQR() {
-        // 获取自定义的公司名称
         const compCn = document.getElementById('comp-cn').value.trim();
         const compEn = document.getElementById('comp-en').value.trim();
 
@@ -104,30 +104,33 @@
             };
             if(item.p.trim() !== "") allData.push(item);
         });
+        
         if(allData.length === 0) { alert("请填写内容"); return; }
         if(!compCn) { alert("请填写公司中文名称"); return; }
 
-        // 将数据包裹在一个对象中，包含公司信息和列表数据 (使用短键名以缩短二维码内容)
         const payload = {
             c: compCn,
             e: compEn,
             d: allData
         };
 
+        // 【修改核心逻辑】使用 LZ-String 替换原来的 Base64 编码
         const jsonStr = JSON.stringify(payload);
-        const utf8Bytes = new TextEncoder().encode(jsonStr);
-        let binary = '';
-        utf8Bytes.forEach(b => binary += String.fromCharCode(b));
-        const base64Data = btoa(binary);
+        // 直接生成对 URL 安全的高压缩比字符串，减少体积
+        const compressedData = LZString.compressToEncodedURIComponent(jsonStr); 
         
-        const finalUrl = `${TARGET_PAGE}?d=${encodeURIComponent(base64Data)}`;
+        const finalUrl = `${TARGET_PAGE}?d=${compressedData}`;
+        
         document.getElementById("qrcode").innerHTML = "";
         new QRCode(document.getElementById("qrcode"), {
             text: finalUrl,
-            width: 220,
-            height: 220,
-            correctLevel : QRCode.CorrectLevel.L
+            // 【修改核心逻辑】适度放大尺寸，从 220 增大到 320，让黑白块更清晰，便于镜头对焦
+            width: 320,  
+            height: 320, 
+            // 保持 L 级别（7% 容错），这是最节省空间的纠错级别
+            correctLevel : QRCode.CorrectLevel.L 
         });
+        
         document.getElementById("qr-status").style.display = "block";
     }
 </script>
