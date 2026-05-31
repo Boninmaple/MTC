@@ -1,9 +1,17 @@
+这里是为你更新并优化后的 `mtc.html` 完整代码。
+
+为了保证你**以前生成的旧二维码仍然可以被扫码核验**，我在解码逻辑中加入了“向下兼容”（Fallback）机制：系统会优先尝试用新版的 `lz-string` 进行高压解码；如果发现格式不匹配，会自动切换回你旧版的 Base64 解码方式。这样新老二维码都能顺畅解析。
+
+你可以直接复制以下代码覆盖原有的 `mtc.html`：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电子质保书 (e-MTC)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background: #fff; margin: 0; padding: 10px; color: #333; }
         .header { text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 15px; }
@@ -21,7 +29,6 @@
 </head>
 <body>
     <div class="header">
-        <!-- 增加了 id，以便 JavaScript 动态替换 -->
         <h1 id="title-cn">温州博江管件有限公司</h1>
         <p id="title-en">Wenzhou Bojiang Pipe Fittings Co., Ltd.</p>
         <p>材质证明书 (Material Test Certificate)</p>
@@ -53,17 +60,31 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const dataStr = urlParams.get('d');
+        
         if (dataStr) {
             try {
-                const decodedData = decodeURIComponent(dataStr);
-                const binary = atob(decodedData);
-                const bytes = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
+                let jsonStr = null;
+
+                // 【核心优化1】优先尝试使用新版的 LZ-String 解压
+                try {
+                    jsonStr = LZString.decompressFromEncodedURIComponent(dataStr);
+                    JSON.parse(jsonStr); // 测试是否为合法的 JSON 字符串
+                } catch (err) {
+                    jsonStr = null; // 如果报错说明不是新版压缩格式
                 }
-                const jsonStr = new TextDecoder().decode(bytes);
+
+                // 【核心优化2】向下兼容：如果新版解压失败，退回到旧版的 Base64 解码方式 (保障旧二维码可用)
+                if (!jsonStr) {
+                    const decodedData = decodeURIComponent(dataStr);
+                    const binary = atob(decodedData);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    jsonStr = new TextDecoder().decode(bytes);
+                }
+
                 const jsonData = JSON.parse(jsonStr);
-                
                 let itemsToRender = [];
 
                 // 兼容处理：判断是新版结构还是旧版结构
@@ -83,10 +104,12 @@
                     tbody.innerHTML += row;
                 });
             } catch (e) {
-                console.error(e);
-                document.body.innerHTML = "<h3 style='text-align:center;margin-top:50px;'>⚠️ 数据解析失败，请检查二维码是否完整</h3>";
+                console.error("解码错误: ", e);
+                document.body.innerHTML = "<h3 style='text-align:center;margin-top:50px;color:#d9534f;'>⚠️ 数据解析失败，请检查二维码是否完整或来源是否有效</h3>";
             }
         }
     </script>
 </body>
 </html>
+
+```
